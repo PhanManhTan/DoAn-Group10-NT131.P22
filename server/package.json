@@ -1,0 +1,28 @@
+{
+  "name": "backend_smart_access_nt131_group10",
+  "version": "1.0.0",
+  "description": "smart_access backed by using nodejs",
+  "main": "server.js",
+  "scripts": {
+    "test": "Backend nodejs",
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PhanManhTan/websocket_server.git"
+  },
+  "author": "Ngoc Thai, Van Son, Manh Tan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PhanManhTan/websocket_server/issues"
+  },
+  "homepage": "https://github.com/PhanManhTan/websocket_server#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.0",
+    "ws": "^8.18.2"
+  }
+}
