@@ -1,0 +1,263 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  margin: 20px;
+  text-align: center;
+}
+h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+.device-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.device-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 250px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.device-card h2 {
+  margin-bottom: 15px;
+}
+.toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+  height: 34px;
+  position: relative;
+}
+.toggle-container input[type="checkbox"] {
+  display: none;
+}
+.toggle-label {
+  position: absolute;
+  cursor: pointer;
+  background-color: #ccc;
+  border-radius: 34px;
+  width: 60px;
+  height: 34px;
+  transition: background-color 0.2s;
+}
+.toggle-label::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 26px;
+  height: 26px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+input[type="checkbox"]:checked + .toggle-label {
+  background-color: #4CAF50;
+}
+input[type="checkbox"]:checked + .toggle-label::before {
+  transform: translateX(26px);
+}
+.status {
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+button:hover {
+  background-color: #45a049;
+}
+.all-buttons {
+  margin-bottom: 30px;
+}
+.timer-section {
+  width: 100%;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+.timer-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #555;
+  text-align: left;
+}
+.time-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.time-control-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+}
+.time-label {
+  font-weight: 500;
+  min-width: 60px;
+  text-align: right;
+}
+.time-control-row input[type="time"] {
+  width: 110px;
+}
+.time-control-row button {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+/* Modal */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.modal-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-in-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.3s ease;
+}
+.close:hover {
+  color: #e74c3c;
+}
+h3 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 20px;
+  color: #333;
+  font-weight: 500;
+}
+.input-container {
+  margin-bottom: 20px;
+}
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+}
+input[type="password"]:focus {
+  border-color: #4CAF50;
+  background-color: #fff;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+  outline: none;
+}
+.update-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+.update-btn:hover {
+  background-color: #45a049;
+  transform: translateY(-3px);
+}
+#passwordUpdateStatus {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+#passwordUpdateStatus.success {
+  color: #2ecc71;
+}
+#passwordUpdateStatus.error {
+  color: #e74c3c;
+}
+.env-card {
+  background: linear-gradient(135deg, #fdfbfb, #ebedee);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  max-width: 320px;
+}
+
+.env-card h3 {
+  margin-top: 0;
+  font-size: 1.4em;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.env-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.env-box {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2em;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.env-label {
+  font-weight: 500;
+  color: #555;
+}

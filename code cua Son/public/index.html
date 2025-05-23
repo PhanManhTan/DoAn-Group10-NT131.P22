@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quản lý các thiết bị trong Smart Home</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>Quản lý các thiết bị trong Smart Home</h1>
+
+  <div class="all-buttons">
+    <div class="toggle-container" style="justify-content:center;">
+      <input type="checkbox" id="toggleAllLights" onchange="toggleAllLightsByToggle(this.checked)">
+      <label for="toggleAllLights" class="toggle-label"></label>
+    </div>
+    <div id="allLightsStatus" class="status" style="margin-top: 8px;">Trạng thái: Tất cả đèn tắt</div>
+  </div>
+
+  <div id="controlPanel" class="device-grid">
+    <!-- First Row: Lights 1-5 -->
+    <div class="device-card">
+      <h2>Đèn 1</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle1" onchange="toggleLight(1)">
+        <label for="lightToggle1" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus1" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime1" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime1" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle1ON" onchange="toggleTimer(1, 'ON', 'LED')">
+              <label for="ledTimerToggle1ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime1" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime1" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle1OFF" onchange="toggleTimer(1, 'OFF', 'LED')">
+              <label for="ledTimerToggle1OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Đèn 2</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle2" onchange="toggleLight(2)">
+        <label for="lightToggle2" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus2" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime2" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime2" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle2ON" onchange="toggleTimer(2, 'ON', 'LED')">
+              <label for="ledTimerToggle2ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime2" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime2" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle2OFF" onchange="toggleTimer(2, 'OFF', 'LED')">
+              <label for="ledTimerToggle2OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Đèn 3</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle3" onchange="toggleLight(3)">
+        <label for="lightToggle3" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus3" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime3" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime3" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle3ON" onchange="toggleTimer(3, 'ON', 'LED')">
+              <label for="ledTimerToggle3ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime3" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime3" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle3OFF" onchange="toggleTimer(3, 'OFF', 'LED')">
+              <label for="ledTimerToggle3OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Đèn 4</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle4" onchange="toggleLight(4)">
+        <label for="lightToggle4" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus4" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime4" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime4" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle4ON" onchange="toggleTimer(4, 'ON', 'LED')">
+              <label for="ledTimerToggle4ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime4" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime4" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle4OFF" onchange="toggleTimer(4, 'OFF', 'LED')">
+              <label for="ledTimerToggle4OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Đèn 5</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle5" onchange="toggleLight(5)">
+        <label for="lightToggle5" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus5" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime5" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime5" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle5ON" onchange="toggleTimer(5, 'ON', 'LED')">
+              <label for="ledTimerToggle5ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime5" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime5" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle5OFF" onchange="toggleTimer(5, 'OFF', 'LED')">
+              <label for="ledTimerToggle5OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second Row: Lights 6-7, Fans 1-2, and Door -->
+    <div class="device-card">
+      <h2>Đèn 6</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle6" onchange="toggleLight(6)">
+        <label for="lightToggle6" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus6" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime6" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime6" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle6ON" onchange="toggleTimer(6, 'ON', 'LED')">
+              <label for="ledTimerToggle6ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime6" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime6" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle6OFF" onchange="toggleTimer(6, 'OFF', 'LED')">
+              <label for="ledTimerToggle6OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Đèn 7</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="lightToggle7" onchange="toggleLight(7)">
+        <label for="lightToggle7" class="toggle-label"></label>
+      </div>
+      <div id="lightStatus7" class="status">Trạng thái: Đèn tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="ledOnTime7" class="time-label">Giờ bật:</label>
+            <input type="time" id="ledOnTime7" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle7ON" onchange="toggleTimer(7, 'ON', 'LED')">
+              <label for="ledTimerToggle7ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="ledOffTime7" class="time-label">Giờ tắt:</label>
+            <input type="time" id="ledOffTime7" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="ledTimerToggle7OFF" onchange="toggleTimer(7, 'OFF', 'LED')">
+              <label for="ledTimerToggle7OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Quạt 1</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="fanToggle1" onchange="toggleFan(1)">
+        <label for="fanToggle1" class="toggle-label"></label>
+      </div>
+      <div id="fanStatus1" class="status">Trạng thái: Quạt tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="fanOnTime1" class="time-label">Giờ bật:</label>
+            <input type="time" id="fanOnTime1" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="fanTimerToggle1ON" onchange="toggleTimer(1, 'ON', 'FAN')">
+              <label for="fanTimerToggle1ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="fanOffTime1" class="time-label">Giờ tắt:</label>
+            <input type="time" id="fanOffTime1" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="fanTimerToggle1OFF" onchange="toggleTimer(1, 'OFF', 'FAN')">
+              <label for="fanTimerToggle1OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Quạt 2</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="fanToggle2" onchange="toggleFan(2)">
+        <label for="fanToggle2" class="toggle-label"></label>
+      </div>
+      <div id="fanStatus2" class="status">Trạng thái: Quạt tắt</div>
+      <div class="timer-section">
+        <div class="timer-title">Cài đặt hẹn giờ</div>
+        <div class="time-controls">
+          <div class="time-control-row">
+            <label for="fanOnTime2" class="time-label">Giờ bật:</label>
+            <input type="time" id="fanOnTime2" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="fanTimerToggle2ON" onchange="toggleTimer(2, 'ON', 'FAN')">
+              <label for="fanTimerToggle2ON" class="toggle-label"></label>
+            </div>
+          </div>
+          <div class="time-control-row">
+            <label for="fanOffTime2" class="time-label">Giờ tắt:</label>
+            <input type="time" id="fanOffTime2" />
+            <div class="toggle-container" style="margin-left: 8px;">
+              <input type="checkbox" id="fanTimerToggle2OFF" onchange="toggleTimer(2, 'OFF', 'FAN')">
+              <label for="fanTimerToggle2OFF" class="toggle-label"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="device-card">
+      <h2>Cửa</h2>
+      <div class="toggle-container">
+        <input type="checkbox" id="doorToggle" onchange="toggleDoor()">
+        <label for="doorToggle" class="toggle-label"></label>
+      </div>
+      <div id="doorStatus" class="status">Trạng thái: Đóng</div>
+      <button onclick="openPasswordModal()">Đổi mật khẩu</button>
+      <div id="passwordModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="closePasswordModal()">×</span>
+          <h3>Đổi mật khẩu cửa</h3>
+          <div class="input-container">
+            <input type="password" id="oldDoorPassword" placeholder="Nhập mật khẩu cũ">
+          </div>
+          <div class="input-container">
+            <input type="password" id="newDoorPassword" placeholder="Nhập mật khẩu mới">
+          </div>
+          <div class="input-container">
+            <input type="password" id="confirmNewPassword" placeholder="Xác nhận mật khẩu mới">
+          </div>
+          <button class="update-btn" onclick="updateDoorPassword()">Cập nhật</button>
+          <div id="passwordUpdateStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="env-card">
+  <h3>🌡️ Nhiệt độ & Độ ẩm</h3>
+  <div class="env-info">
+    <div class="env-box">
+      <span class="env-label">Nhiệt độ:</span>
+      <span id="temperature">-- °C</span>
+    </div>
+    <div class="env-box">
+      <span class="env-label">Độ ẩm:</span>
+      <span id="humidity">-- %</span>
+    </div>
+  </div>
+</div>
+  <script src="script.js"></script>
+</body>
+</html>

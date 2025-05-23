@@ -1,0 +1,17 @@
+{
+  "password": "2",
+  "rfidList": [
+    {
+      "id": "0475C752",
+      "name": "Van Son"
+    },
+    {
+      "id": "73A42D2D",
+      "name": "UNKNOWN"
+    },
+    {
+      "id": "84A52803",
+      "name": "Admin"
+    }
+  ]
+}

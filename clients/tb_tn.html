@@ -58,7 +58,7 @@
             </div>
 
             <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item active">
+            <!-- <li class="nav-item active">
                 <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
                     aria-controls="collapseTwo">
                     <i class="fas fa-fw fa-cog"></i>
@@ -72,7 +72,15 @@
                         <a class="collapse-item" href="facemanager.html">Khuôn mặt</a>
                     </div>
                 </div>
+            </li> -->
+
+            <li class="nav-item active">
+                <a class="nav-link" href="tb_tn.html">
+                    <i class="fas fa-fw fa-clock"></i>
+                    <span>Thiết bị và tính năng</span>
+                </a>
             </li>
+
 
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
@@ -80,21 +88,6 @@
                     <i class="fas fa-fw fa-clock"></i>
                     <span>Lịch sử truy cập</span>
                 </a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                Người dùng
-            </div>
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link" href="profile.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Profile</span></a>
             </li>
 
             <!-- Divider -->
@@ -177,19 +170,8 @@
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Profile
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
-                                <div class="dropdown-divider"></div>
+
+                                <div class="dropdown-item"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
@@ -204,78 +186,357 @@
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    <h1 class="h3 mb-4 text-gray-800">Quản lí thiết bị và tính năng</h1>
+                    <!-- /.container-fluid -->
+                    <h1 class="h3 mb-4 text-gray-800">Quản lí các thiết bị trong Smart Home</h1>
 
+                    <!-- Nút bật/tắt toàn bộ đèn -->
+                    <div class="card shadow mb-4">
+                        <div
+                            class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                            <div class="d-flex align-items-center mb-3 mb-md-0">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="toggleAllLights"
+                                        onchange="toggleAllLightsByToggle(this.checked)">
+                                    <label class="custom-control-label" for="toggleAllLights"></label>
+                                </div>
+                                <span class="ml-3 font-weight-bold">Bật/Tắt tất cả đèn</span>
+                            </div>
+                            <div id="allLightsStatus" class="status text-primary font-weight-bold">
+                                Trạng thái: Tất cả đèn tắt
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grid các thiết bị -->
                     <div class="row">
-                        <!-- CỘT TRÁI: Toggle các tính năng -->
-                        <div class="col-lg-6 mb-4">
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Thiết bị &amp; Tính năng</h6>
+                        <!-- Đèn 1 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        1</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle1"
+                                            onchange="toggleLight(1)">
+                                        <label class="custom-control-label" for="lightToggle1"></label>
+                                    </div>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Nhóm 1: Đèn / Camera / Báo động -->
-                                    <div class="mb-4 pb-3 border-bottom">
-                                        <div
-                                            class="custom-control custom-switch mb-3 d-flex justify-content-between align-items-center">
-                                            <span>Đèn</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchLight"
-                                                checked>
-                                            <label class="custom-control-label" for="switchLight"></label>
+                                    <div id="lightStatus1" class="status mb-2">Trạng thái: <span
+                                            class="badge badge-secondary">Đèn tắt</span></div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime1" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle1ON" onchange="toggleTimer(1, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle1ON"></label>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div
-                                            class="custom-control custom-switch mb-3 d-flex justify-content-between align-items-center">
-                                            <span>Camera</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchCamera">
-                                            <label class="custom-control-label" for="switchCamera"></label>
-                                        </div>
-                                        <div
-                                            class="custom-control custom-switch d-flex justify-content-between align-items-center">
-                                            <span>Báo động</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchAlarm"
-                                                checked>
-                                            <label class="custom-control-label" for="switchAlarm"></label>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime1" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle1OFF" onchange="toggleTimer(1, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle1OFF"></label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <!-- Nhóm 2: Các tính năng nâng cao -->
-                                    <div>
-                                        <div
-                                            class="custom-control custom-switch mb-3 d-flex justify-content-between align-items-center">
-                                            <span>Gửi email khi thất bại &gt; 3 lần liên tiếp</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchEmailFail"
-                                                checked />
-                                            <label class="custom-control-label" for="switchEmailFail"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Đèn 2 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        2</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle2"
+                                            onchange="toggleLight(2)">
+                                        <label class="custom-control-label" for="lightToggle2"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="lightStatus2" class="status mb-2">
+                                        Trạng thái: <span class="badge badge-secondary">Đèn tắt</span>
+                                    </div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime2" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle2ON" onchange="toggleTimer(2, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle2ON"></label>
+                                                </div>
+                                            </div>
                                         </div>
-
-                                        <div
-                                            class="custom-control custom-switch mb-3 d-flex justify-content-between align-items-center">
-                                            <span>Gửi SMS / Webhook khi Face-ID thành công</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchSmsSuccess" />
-                                            <label class="custom-control-label" for="switchSmsSuccess"></label>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime2" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle2OFF" onchange="toggleTimer(2, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle2OFF"></label>
+                                                </div>
+                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                                        <div
-                                            class="custom-control custom-switch mb-3 d-flex justify-content-between align-items-center">
-                                            <span>Thông báo real-time trên dashboard</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchRealtime"
-                                                checked />
-                                            <label class="custom-control-label" for="switchRealtime"></label>
+                        <!-- Đèn 3 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        3</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle3"
+                                            onchange="toggleLight(3)">
+                                        <label class="custom-control-label" for="lightToggle3"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="lightStatus3" class="status mb-2">
+                                        Trạng thái: <span class="badge badge-secondary">Đèn tắt</span>
+                                    </div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime3" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle3ON" onchange="toggleTimer(3, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle3ON"></label>
+                                                </div>
+                                            </div>
                                         </div>
-
-                                        <div
-                                            class="custom-control custom-switch mb-3 d-flex justify-content-between align-items-center">
-                                            <span>Báo cáo định kỳ (Daily Summary)</span>
-                                            <input type="checkbox" class="custom-control-input"
-                                                id="switchDailySummary" />
-                                            <label class="custom-control-label" for="switchDailySummary"></label>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime3" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle3OFF" onchange="toggleTimer(3, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle3OFF"></label>
+                                                </div>
+                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                                        <div
-                                            class="custom-control custom-switch d-flex justify-content-between align-items-center">
-                                            <span>Tự động khoá cửa nếu thất bại &gt; 5 lần</span>
-                                            <input type="checkbox" class="custom-control-input" id="switchAutoLock" />
-                                            <label class="custom-control-label" for="switchAutoLock"></label>
+                        <!-- Đèn 4 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        4</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle4"
+                                            onchange="toggleLight(4)">
+                                        <label class="custom-control-label" for="lightToggle4"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="lightStatus4" class="status mb-2">
+                                        Trạng thái: <span class="badge badge-secondary">Đèn tắt</span>
+                                    </div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime4" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle4ON" onchange="toggleTimer(4, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle4ON"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime4" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle4OFF" onchange="toggleTimer(4, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle4OFF"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Đèn 5 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        5</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle5"
+                                            onchange="toggleLight(5)">
+                                        <label class="custom-control-label" for="lightToggle5"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="lightStatus5" class="status mb-2">
+                                        Trạng thái: <span class="badge badge-secondary">Đèn tắt</span>
+                                    </div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime5" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle5ON" onchange="toggleTimer(5, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle5ON"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime5" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle5OFF" onchange="toggleTimer(5, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle5OFF"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Đèn 6 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        6</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle6"
+                                            onchange="toggleLight(6)">
+                                        <label class="custom-control-label" for="lightToggle6"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="lightStatus6" class="status mb-2">
+                                        Trạng thái: <span class="badge badge-secondary">Đèn tắt</span>
+                                    </div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime6" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle6ON" onchange="toggleTimer(6, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle6ON"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime6" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle6OFF" onchange="toggleTimer(6, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle6OFF"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Đèn 7 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-lightbulb"></i> Đèn
+                                        7</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="lightToggle7"
+                                            onchange="toggleLight(7)">
+                                        <label class="custom-control-label" for="lightToggle7"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="lightStatus7" class="status mb-2">
+                                        Trạng thái: <span class="badge badge-secondary">Đèn tắt</span>
+                                    </div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOnTime7" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle7ON" onchange="toggleTimer(7, 'ON', 'LED')">
+                                                    <label class="custom-control-label" for="ledTimerToggle7ON"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="ledOffTime7" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="ledTimerToggle7OFF" onchange="toggleTimer(7, 'OFF', 'LED')">
+                                                    <label class="custom-control-label"
+                                                        for="ledTimerToggle7OFF"></label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -283,64 +544,193 @@
                         </div>
 
 
-                        <!-- ====== CỘT PHẢI: Bảng bật/tắt thiết bị ====== -->
-                        <div class="col-lg-6 mb-4">
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Danh sách thiết bị</h6>
+                        <!-- Copy/paste cho các Đèn 2...7, Quạt, Cửa, v.v. như mẫu trên, đổi ID và tên cho đúng -->
+
+                        <!-- Ví dụ Quạt 1 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-fan"></i> Quạt 1</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="fanToggle1"
+                                            onchange="toggleFan(1)">
+                                        <label class="custom-control-label" for="fanToggle1"></label>
+                                    </div>
                                 </div>
                                 <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Thiết bị</th>
-                                                    <th>Vị trí</th>
-                                                    <th>Trạng thái</th>
-                                                    <th class="text-center">Điều khiển</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Dòng mẫu -->
-                                                <tr>
-                                                    <td>ESP32-CAM-01</td>
-                                                    <td>Cổng chính</td>
-                                                    <td>
-                                                        <span class="badge badge-success">On</span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="custom-control custom-switch d-inline-block">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="toggleEsp01" checked />
-                                                            <label class="custom-control-label"
-                                                                for="toggleEsp01"></label>
+                                    <div id="fanStatus1" class="status mb-2">Trạng thái: <span
+                                            class="badge badge-secondary">Quạt tắt</span></div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="fanOnTime1" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="fanTimerToggle1ON" onchange="toggleTimer(1, 'ON', 'FAN')">
+                                                    <label class="custom-control-label" for="fanTimerToggle1ON"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="fanOffTime1" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="fanTimerToggle1OFF" onchange="toggleTimer(1, 'OFF', 'FAN')">
+                                                    <label class="custom-control-label"
+                                                        for="fanTimerToggle1OFF"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Quạt 2 -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary"><i class="fas fa-fan"></i> Quạt 2</span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="fanToggle2"
+                                            onchange="toggleFan(2)">
+                                        <label class="custom-control-label" for="fanToggle2"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="fanStatus2" class="status mb-2">Trạng thái: <span
+                                            class="badge badge-secondary">Quạt tắt</span></div>
+                                    <div class="timer-section">
+                                        <div class="timer-title font-weight-bold mb-2">Cài đặt hẹn giờ</div>
+                                        <div class="form-group row align-items-center mb-2">
+                                            <label class="col-sm-4 col-form-label">Giờ bật:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="fanOnTime2" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="fanTimerToggle2ON" onchange="toggleTimer(2, 'ON', 'FAN')">
+                                                    <label class="custom-control-label" for="fanTimerToggle2ON"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row align-items-center">
+                                            <label class="col-sm-4 col-form-label">Giờ tắt:</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <input type="time" class="form-control form-control-sm"
+                                                    id="fanOffTime2" />
+                                                <div class="custom-control custom-switch ml-3">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        id="fanTimerToggle2OFF" onchange="toggleTimer(2, 'OFF', 'FAN')">
+                                                    <label class="custom-control-label"
+                                                        for="fanTimerToggle2OFF"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ví dụ card cho cửa (door) -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-primary">
+                                        <i class="fas fa-door-closed"></i> Cửa
+                                    </span>
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="doorToggle"
+                                            onchange="toggleDoor()">
+                                        <label class="custom-control-label" for="doorToggle"></label>
+                                    </div>
+                                </div>
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center"
+                                    style="min-height: 180px;">
+                                    <div id="doorStatus" class="status mb-3">
+                                        Trạng thái: <span class="badge badge-secondary">Đóng</span>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm" data-toggle="modal"
+                                        data-target="#passwordModal">
+                                        <i class="fas fa-key"></i> Đổi mật khẩu
+                                    </button>
+                                    <!-- Modal đổi mật khẩu đặt ngoài card (hoặc trong cùng file html) -->
+                                    <div class="modal fade" id="passwordModal" tabindex="-1" role="dialog"
+                                        aria-labelledby="passwordModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="passwordModalLabel"><i
+                                                            class="fas fa-key"></i> Đổi mật khẩu cửa</h5>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Đóng">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form id="doorPasswordForm" autocomplete="off">
+                                                        <div class="form-group">
+                                                            <label for="oldDoorPassword">Mật khẩu cũ</label>
+                                                            <input type="password" class="form-control"
+                                                                id="oldDoorPassword" placeholder="Nhập mật khẩu cũ"
+                                                                required>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>ESP32-CAM-02</td>
-                                                    <td>Cổng sau</td>
-                                                    <td>
-                                                        <span class="badge badge-danger">Off</span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <div class="custom-control custom-switch d-inline-block">
-                                                            <input type="checkbox" class="custom-control-input"
-                                                                id="toggleEsp02" />
-                                                            <label class="custom-control-label"
-                                                                for="toggleEsp02"></label>
+                                                        <div class="form-group">
+                                                            <label for="newDoorPassword">Mật khẩu mới</label>
+                                                            <input type="password" class="form-control"
+                                                                id="newDoorPassword" placeholder="Nhập mật khẩu mới"
+                                                                required>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                                <!-- Thêm các dòng tương tự tuỳ số lượng thiết bị -->
-                                            </tbody>
-                                        </table>
+                                                        <div class="form-group">
+                                                            <label for="confirmNewPassword">Xác nhận mật khẩu
+                                                                mới</label>
+                                                            <input type="password" class="form-control"
+                                                                id="confirmNewPassword"
+                                                                placeholder="Xác nhận mật khẩu mới" required>
+                                                        </div>
+                                                        <button type="button" class="btn btn-primary btn-block"
+                                                            onclick="updateDoorPassword()">Cập nhật</button>
+                                                        <div id="passwordUpdateStatus" class="mt-2"></div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- ... thêm các card khác nếu cần ... -->
+                    </div>
+
+                    <!-- Thẻ hiển thị nhiệt độ & độ ẩm cũng cho vào 1 card -->
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-header font-weight-bold text-primary">
+                                    <i class="fas fa-thermometer-half"></i> Nhiệt độ & Độ ẩm
+                                </div>
+                                <div class="card-body">
+                                    <div class="env-info">
+                                        <div class="env-box mb-2">
+                                            <span class="env-label">Nhiệt độ:</span>
+                                            <span id="temperature" class="badge badge-info">-- °C</span>
+                                        </div>
+                                        <div class="env-box">
+                                            <span class="env-label">Độ ẩm:</span>
+                                            <span id="humidity" class="badge badge-info">-- %</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- /.container-fluid -->
 
                 </div>
                 <!-- End of Main Content -->
@@ -349,7 +739,7 @@
                 <footer class="sticky-footer bg-white">
                     <div class="container my-auto">
                         <div class="copyright text-center my-auto">
-                            <span>Copyright &copy; Your Website 2020</span>
+                            <span>Copyright &copy; Smart Access 2025</span>
                         </div>
                     </div>
                 </footer>
@@ -377,7 +767,8 @@
                             <span aria-hidden="true">×</span>
                         </button>
                     </div>
-                    <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                    <div class="modal-body">Select "Logout" below if you are ready to end your current session.
+                    </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
                         <a class="btn btn-primary" href="login.html">Logout</a>
@@ -395,7 +786,7 @@
 
         <!-- Custom scripts for all pages-->
         <script src="js/sb-admin-2.min.js"></script>
-
+        <script src="script.js"></script>
 </body>
 
 </html>
