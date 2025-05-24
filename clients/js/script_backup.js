@@ -78,6 +78,26 @@ else if (msgStr === "UPDATE_PASSWORD_FAIL_EMPTY") {
   }
 };
 
+function updateToggleAllLightsStatus() {
+  let allOn = true;
+  for (let i = 1; i <= 7; i++) {
+    if (!document.getElementById(`lightToggle${i}`).checked) {
+      allOn = false;
+      break;
+    }
+  }
+  const toggleAll = document.getElementById("toggleAllLights");
+  if (toggleAll) toggleAll.checked = allOn;
+  updateAllLightsStatusText(allOn);
+}
+
+function updateAllLightsStatusText(allOn) {
+  const statusDiv = document.getElementById("allLightsStatus");
+  if (statusDiv) {
+    statusDiv.textContent = allOn ? "Trạng thái: Tất cả đèn bật" : "Trạng thái: Tất cả đèn tắt";
+  }
+}
+
   ws.onerror = (err) => {
     console.error("Lỗi WebSocket:", err);
     alert("Lỗi kết nối WebSocket. Vui lòng kiểm tra kết nối mạng.");

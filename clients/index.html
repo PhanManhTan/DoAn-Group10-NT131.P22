@@ -212,35 +212,42 @@
                                             <thead class="thead-light">
                                                 <tr>
                                                     <th>Tên thiết bị</th>
-                                                    <th>Firmware</th>
                                                     <th>Trạng thái</th>
                                                     <th class="text-center">Hành động</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>ESP32-CAM-01</td>
-                                                    <td>v1.2.3</td>
-                                                    <td><span class="badge badge-success">On</span></td>
+                                                    <td>ĐÈN</td>
+                                                    <td>5 / 7 On </td>
                                                     <td class="text-center">
                                                         <div class="custom-control custom-switch d-inline-block">
                                                             <input type="checkbox" class="custom-control-input"
-                                                                id="toggleEsp01" checked />
-                                                            <label class="custom-control-label"
-                                                                for="toggleEsp01"></label>
+                                                                id="toggleDen" checked />
+                                                            <label class="custom-control-label" for="toggleDen"></label>
                                                         </div>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td>ESP32-CAM-02</td>
-                                                    <td>v1.2.3</td>
-                                                    <td><span class="badge badge-danger">Off</span></td>
+                                                    <td>QUẠT</td>
+                                                    <td>1/2 On</td>
                                                     <td class="text-center">
                                                         <div class="custom-control custom-switch d-inline-block">
                                                             <input type="checkbox" class="custom-control-input"
-                                                                id="toggleEsp02" />
+                                                                id="toggleQuat" />
                                                             <label class="custom-control-label"
-                                                                for="toggleEsp02"></label>
+                                                                for="toggleQuat"></label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>CỬA</td>
+                                                    <td>Off</td>
+                                                    <td class="text-center">
+                                                        <div class="custom-control custom-switch d-inline-block">
+                                                            <input type="checkbox" class="custom-control-input"
+                                                                id="toggleCua" />
+                                                            <label class="custom-control-label" for="toggleCua"></label>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -296,7 +303,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; 2025</span>
+                        <span>Copyright &copy; Smart Access 2025</span>
                     </div>
                 </div>
             </footer>
@@ -345,8 +352,8 @@
 
     <!-- Page level plugins -->
     <script src="vendor/chart.js/Chart.min.js"></script>
-    <script src="js/script.js"></script>
-
+    <script src="js/script_main.js"></script>
+    <script src="js/script_dashboard.js"></script>
 </body>
 
 </html>
