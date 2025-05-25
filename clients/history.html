@@ -114,20 +114,6 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <!-- Topbar Search -->
-                    <form
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                aria-label="Search" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
-                                    <i class="fas fa-search fa-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
@@ -163,7 +149,6 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
@@ -205,29 +190,29 @@
                                             cellspacing="0">
                                             <thead>
                                                 <tr>
-                                                    <th>User</th>
-                                                    <th>Type</th>
-                                                    <th>Result</th>
-                                                    <th>Time</th>
+                                                    <th>Thiết bị</th>
+                                                    <th>Loại</th>
+                                                    <th>Kết quả</th>
+                                                    <th>Thời gian</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>Liam</td>
-                                                    <td>Face ID</td>
-                                                    <td><span class="text-success">Success</span></td>
+                                                    <td>CỬA</td>
+                                                    <td>RFID</td>
+                                                    <td><span class="text-success">Thành công</span></td>
                                                     <td>10:12 AM, 30/04/2025</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>John Doe</td>
-                                                    <td>Face ID</td>
-                                                    <td><span class="text-danger">Failed</span></td>
+                                                    <td>CỬA</td>
+                                                    <td>Mật khẩu</td>
+                                                    <td><span class="text-danger">Thất bại</span></td>
                                                     <td>11:45 AM, 30/04/2025</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Apple</td>
-                                                    <td>Card Swipe</td>
-                                                    <td><span class="text-success">Success</span></td>
+                                                    <td>CỬA</td>
+                                                    <td>Mật khẩu</td>
+                                                    <td><span class="text-success">Thành công</span></td>
                                                     <td>01:15 PM, 30/04/2025</td>
                                                 </tr>
                                                 <!-- … các bản ghi khác … -->
@@ -245,34 +230,32 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="card-title mb-0">Lượt truy cập gần đây</h5>
-                                        <small class="text-secondary"><i class="far fa-calendar-alt"></i> 23 - 30 March
-                                            2020</small>
                                     </div>
 
                                     <h6 class="font-weight-bold">Hôm nay</h6>
-                                    <ul class="list-unstyled mb-4">
+                                    <ul class="list-unstyled mb-4" id="recent-access-today">
                                         <li class="d-flex justify-content-between align-items-center py-2 border-top">
                                             <div>
                                                 <i class="fas fa-times-circle fa-lg text-danger mr-2"></i>
-                                                <strong>Nguyễn Văn Alo</strong><br>
-                                                <small class="text-secondary">Type: Face ID</small><br>
+                                                <strong>CỬA</strong><br>
+                                                <small class="text-secondary">Loại: Mật khẩu</small><br>
                                                 <small class="text-secondary">7 May 2025, at 12:30 PM</small>
                                             </div>
-                                            <span class="text-danger font-weight-bold">Failed</span>
+                                            <span class="text-danger font-weight-bold">Thất bại</span>
                                         </li>
                                         <!-- các item tiếp theo... -->
                                     </ul>
 
                                     <h6 class="font-weight-bold">Hôm qua</h6>
-                                    <ul class="list-unstyled">
+                                    <ul class="list-unstyled" id="recent-access-yesterday">
                                         <li class="d-flex justify-content-between align-items-center py-2 border-top">
                                             <div>
                                                 <i class="fas fa-check-circle fa-lg text-success mr-2"></i>
-                                                <strong>Stripe</strong><br>
-                                                <small class="text-secondary">Type: Face ID</small><br>
+                                                <strong>CỬA</strong><br>
+                                                <small class="text-secondary">Loại: Mật khẩu</small><br>
                                                 <small class="text-secondary">7 May 2025, at 12:30 PM</small>
                                             </div>
-                                            <span class="text-success font-weight-bold">Success</span>
+                                            <span class="text-success font-weight-bold">Thành công</span>
                                         </li>
                                         <!-- các item tiếp theo... -->
                                     </ul>
@@ -339,7 +322,7 @@
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
     <script src="js/script.js"></script>
-
+    <script src="js/script_history.js"></script>
 </body>
 
 </html>

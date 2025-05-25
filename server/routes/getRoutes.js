@@ -2,6 +2,9 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 
+// Lay log tu AccessLog model
+const AccessLog = require('../src/models/AccessLog');
+
 const CLIENTS_DIR = path.join(__dirname, '..', '..', 'clients');
 const PUBLIC_PATHS = [
   '/login', '/login.html',
@@ -44,5 +47,26 @@ router.get('/forgot-password', (req, res) => res.sendFile(path.join(CLIENTS_DIR,
 router.get('/verify-otp', (req, res) => res.sendFile(path.join(CLIENTS_DIR, 'verify-otp.html')));
 router.get('/reset-password', (req, res) => res.sendFile(path.join(CLIENTS_DIR, 'reset-password.html')));
 
+// Lấy tất cả lịch sử truy cập (history.html)
+router.get('/api/access-logs', async (req, res) => {
+  try {
+    const logs = await AccessLog.find().sort({ time: -1 });
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+});
+
+  router.get('/api/logs/recent', async (req, res) => {
+  try {
+    // Lấy hết trong 2 ngày gần nhất, hoặc bạn lấy 30 bản ghi mới nhất
+    const logs = await AccessLog.find({})
+      .sort({ time: -1 })
+      .limit(20);
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

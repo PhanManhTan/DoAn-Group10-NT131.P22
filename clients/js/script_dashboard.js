@@ -119,3 +119,42 @@ document.getElementById("toggleCua")?.addEventListener("change", (e) => {
 
 // Đăng ký callback xử lý tin nhắn
 registerOnMessageCallback(dashboard_onMessage);
+
+async function loadDashboardRecentAccess() {
+  const res = await fetch('/api/logs/recent');
+  const logs = await res.json();
+
+  // Giới hạn 5 bản ghi gần nhất
+  const latestLogs = logs.slice(0, 5);
+
+  const tbody = document.querySelector('#recentAccessTable tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = latestLogs.map(log => renderDashboardLogRow(log)).join('');
+}
+
+function renderDashboardLogRow(log) {
+  // Định dạng trạng thái
+  const isSuccess = log.result === 'Success' || log.result === 'Thành công';
+  const badge = isSuccess
+    ? `<span class="badge badge-success">Thành công</span>`
+    : `<span class="badge badge-danger">Thất bại</span>`;
+  const method = log.method === 'PASSWORD' ? 'Mật khẩu' : log.method === 'RFID' ? 'RFID' : (log.method || '');
+  // Định dạng thời gian
+  const time = new Date(log.time);
+  const timeStr = time.toLocaleString('vi-VN', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  return `<tr>
+    <td>${timeStr}</td>
+    <td>${log.device || 'Cửa'}</td>
+    <td>${method}</td>
+    <td>${badge}</td>
+  </tr>`;
+}
+
+// Gọi khi DOM ready
+document.addEventListener('DOMContentLoaded', loadDashboardRecentAccess);
+

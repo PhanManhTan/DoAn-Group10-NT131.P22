@@ -6,6 +6,9 @@ const path = require('path');
 const fs = require('fs');
 
 
+//import model accesslog
+const AccessLog = require('../src/models/AccessLog');
+
 module.exports = function setupWebSocket(server) {
   console.log('>> [DEBUG] Đã vào setupWebSocket!');
   const wss = new WebSocket.Server({ server });
@@ -300,6 +303,13 @@ module.exports = function setupWebSocket(server) {
         const result = pw === accessData.password ? "PASSWORD_OK" : "PASSWORD_FAIL";
         ws.send(result);
         log(`🔑 Kết quả kiểm tra mật khẩu: ${result === "PASSWORD_OK" ? "Thành công" : "Thất bại"}`);
+           // Ghi log
+        AccessLog.create({
+          device: 'Cửa',
+          method: 'PASSWORD',
+          result: result === 'PASSWORD_OK' ? 'Success' : 'Failed',
+          time: new Date()
+        });
         return;
       }
 
@@ -318,6 +328,12 @@ module.exports = function setupWebSocket(server) {
           ws.send("RFID_FAIL");
           log(`❌ RFID không hợp lệ: ${id}`);
         }
+        AccessLog.create({
+          device: 'Cửa',
+          method: 'RFID',
+          result: entry ? 'Success' : 'Failed',
+          time: new Date()
+        });
         return;
       }
 

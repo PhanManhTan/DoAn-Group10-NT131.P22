@@ -3,7 +3,7 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const User = require('../src/config'); 
+const User = require('../src/models/User'); 
 require('dotenv').config();
 
 const router = express.Router();
