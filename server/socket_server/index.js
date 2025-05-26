@@ -1,301 +1,202 @@
 const express = require('express');
-const http = require("http");
-const WebSocket = require("ws");
-const os = require('os');
-const path = require('path');
-const fs = require('fs');
-
-
-//import model accesslog
+const http = require('http');
+const WebSocket = require('ws');
+const mongoose = require('mongoose');
+const AccessData = require('../src/models/AccessData'); 
 const AccessLog = require('../src/models/AccessLog');
 
-module.exports = function setupWebSocket(server) {
-  console.log('>> [DEBUG] Đã vào setupWebSocket!');
-  const wss = new WebSocket.Server({ server });
-  console.log("[WS] WebSocket server started!");
-
-  wss.on('connection', (ws) => {
-    console.log("[WS] Client connected!");
-    ws.send('Kết nối WS thành công!');
-    ws.on('message', (msg) => {
-      console.log("[WS] Received from client:", msg.toString());
-      ws.send(`Server received: ${msg}`);
-    });
-    ws.on('close', () => {
-      console.log("[WS] Client disconnected!");
-    });
-  });
-
-  const TELEGRAM_BOT_TOKEN = '7542275864:AAGK9VDjry4pFMirq0F70puuG1BfV8dWDDs';
-  const CHAT_ID = '8014894738'; // Thường là số
-
-  let esp32Socket = null;
-  const accessDataPath = path.join(__dirname, '..', 'Database', 'access_data.txt');
+module.exports = async function setupWebSocket(server) {
+  console.log('>> [DEBUG] Initializing WebSocket server');
 
 
-  let accessData = {
-    password: "",
-    rfidIds: []
-  };
-
-  function sendTelegramMessage(message) {
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-    const payload = {
-      chat_id: CHAT_ID,
-      text: message
-    };
-    log("==> Gửi tin nhắn Telegram: " + message);
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then(res => {
-      if (!res.ok) {
-        log(`❌ Gửi tin nhắn Telegram thất bại: ${res.statusText}`);
-      }
-    }).catch(err => {
-      log(`❌ Lỗi khi gửi tin nhắn Telegram: ${err.message}`);
-    });
-  }
-
-  // Log có thời gian [ HH:mm DD/MM/YYYY ]
-  function log(msg) {
-    const now = new Date();
-    const day = now.getDate().toString().padStart(2, '0');
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const year = now.getFullYear();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    
-    const formattedTime = `[${hours}:${minutes} ${day}/${month}/${year}]`;
-    console.log(`${formattedTime} ${msg}`);
-  }
-
-  // Đọc file access_data.txt
-  if (fs.existsSync(accessDataPath)) {
-    try {
-      const data = fs.readFileSync(accessDataPath, 'utf8');
-      accessData = JSON.parse(data);
-      log("📂 Đã tải dữ liệu từ access_data.txt");
-    } catch (err) {
-      log("❌ Lỗi khi đọc access_data.txt: " + err.message);
-    }
-  }
-
-  function saveAccessData() {
-    fs.writeFile(accessDataPath, JSON.stringify(accessData, null, 2), (err) => {
-      if (err) log("❌ Lỗi khi ghi file access_data.txt: " + err.message);
-      else log("💾 Đã cập nhật access_data.txt");
-    });
-  }
-
-  let ledStates = {
-    led1: false, led2: false, led3: false, led4: false,
-    led5: false, led6: false, led7: false
-  };
-  let fanStates = {
-    fan1: false, fan2: false
-  };
+  // State Management
+  let accessData = { password: '', rfidList: [] };
+  let ledStates = { led1: false, led2: false, led3: false, led4: false, led5: false, led6: false, led7: false };
+  let fanStates = { fan1: false, fan2: false };
   let doorState = false;
   let timers = {};
+  let esp32Socket = null;
 
-  wss.on("connection", (ws) => {
-    log("🔌 Kết nối mới từ client");
+  // Telegram Configuration
+  const TELEGRAM_BOT_TOKEN = process.env.telegram_bot_token;
+  const CHAT_ID = process.env.chat_id;
 
+  // Utility Functions
+  const log = (msg) => {
+    const now = new Date();
+    const formattedTime = now.toLocaleString('en-GB', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+    console.log(`[${formattedTime}] ${msg}`);
+  };
+
+  const sendTelegramMessage = async (message) => {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: message })
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      log(`==> Sent Telegram message: ${message}`);
+    } catch (err) {
+      log(`❌ Failed to send Telegram message: ${err.message}`);
+    }
+  };
+
+  const loadAccessData = async () => {
+  try {
+    let data = await AccessData.findOne({}).lean().exec();
+    //log(`📂 Dữ liệu thô từ MongoDB: ${JSON.stringify(data)}`);
+    if (!data) {
+      data = new AccessData({ password: '', rfidList: [] });
+      await data.save();
+      //log('📂 Khởi tạo dữ liệu mặc định trong MongoDB');
+    }
+    accessData = { password: data.password, rfidList: data.rfidList };
+    //log(`📂 Đã tải accessData: ${JSON.stringify(accessData)}`);
+  } catch (err) {
+    //log(`❌ Lỗi tải dữ liệu: ${err.stack}`);
+  }
+};
+
+const saveAccessData = async () => {
+  try {
+    const result = await AccessData.updateOne(
+      {},
+      { $set: { password: accessData.password, rfidList: accessData.rfidList } },
+      { upsert: true }
+    );
+    log(`💾 Cập nhật MongoDB: ${JSON.stringify(result)}`);
+  } catch (err) {
+    log(`❌ Lỗi lưu dữ liệu: ${err.stack}`);
+  }
+};
+
+  const broadcastToClients = (message, excludeWs) => {
+    wss.clients.forEach(client => {
+      if (client !== excludeWs && client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+
+  // Load initial data
+  await loadAccessData();
+
+  // WebSocket Server Setup
+  const wss = new WebSocket.Server({ server });
+  log('[WS] WebSocket server started');
+
+  // Handle WebSocket Connections
+  wss.on('connection', (ws) => {
+    log('🔌 New client connection');
+
+    // Send initial states to new client
     if (ws !== esp32Socket && ws.readyState === WebSocket.OPEN) {
-      for (let i = 1; i <= 7; i++) {
-        ws.send(ledStates[`led${i}`] ? `LED_${i}_ON` : `LED_${i}_OFF`);
-      }
-      ws.send(doorState ? "DOOR_OPEN" : "DOOR_CLOSE");
-      for (let i = 1; i <= 2; i++) {
-        ws.send(fanStates[`fan${i}`] ? `FAN_${i}_ON` : `FAN_${i}_OFF`);
-      }
+      Object.keys(ledStates).forEach((led, i) => {
+        ws.send(`${ledStates[led] ? `LED_${i + 1}_ON` : `LED_${i + 1}_OFF`}`);
+      });
+      ws.send(doorState ? 'DOOR_OPEN' : 'DOOR_CLOSE');
+      Object.keys(fanStates).forEach((fan, i) => {
+        ws.send(`${fanStates[fan] ? `FAN_${i + 1}_ON` : `FAN_${i + 1}_OFF`}`);
+      });
     }
 
-    ws.on("message", (message) => {
+    ws.on('message', async (message) => {
       const msgStr = message.toString();
-      const source = ws === esp32Socket ? "ESP32-S3" : "Web Client";
+      const source = ws === esp32Socket ? 'ESP32-S3' : 'Web Client';
+      log(`📩 ${source}: ${msgStr}`);
 
-      if (msgStr.includes("ESP32-S3")) {
+      // Handle ESP32 Registration
+      if (msgStr.includes('ESP32-S3')) {
         esp32Socket = ws;
-        log(`✅ ${source} đã đăng ký là ESP32-S3`);
+        log(`✅ ${source} registered as ESP32-S3`);
         return;
       }
 
-      if (msgStr === "BUZZ_ON") {
-        log("⚠️ Phát hiện khí gas! Đã bật còi cảnh báo.");
-        sendTelegramMessage("⚠️ Phát hiện khí gas! Đã bật còi báo động!");
+      // Handle Gas Detection
+      if (msgStr === 'BUZZ_ON') {
+        log('⚠️ Gas detected! Activating buzzer.');
+        await sendTelegramMessage('⚠️ Gas detected! Buzzer activated!');
         return;
-      } else if (msgStr === "BUZZ_OFF") {
-        log("✅ Không còn khí gas. Đã tắt còi.");
-        sendTelegramMessage("✅ Khí gas an toàn. Đã tắt còi cảnh báo.");
-        return;
-      }
-
-      if (msgStr.startsWith("TEMP:")) {
-        const temp = parseFloat(msgStr.split(":")[1]);
-        log(`🌡️ Nhiệt độ hiện tại: ${temp}°C`);
-        wss.clients.forEach(client => {
-          if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(msgStr);
-          }
-        });
+      } else if (msgStr === 'BUZZ_OFF') {
+        log('✅ Gas cleared. Buzzer deactivated.');
+        await sendTelegramMessage('✅ Gas safe. Buzzer deactivated.');
         return;
       }
 
-      if (msgStr.startsWith("HUM:")) {
-        const hum = parseFloat(msgStr.split(":")[1]);
-        log(`💧 Độ ẩm hiện tại: ${hum}%`);
-        wss.clients.forEach(client => {
-          if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(msgStr);
-          }
-        });
+      // Handle Sensor Data
+      if (msgStr.startsWith('TEMP:')) {
+        const temp = parseFloat(msgStr.split(':')[1]);
+        log(`🌡️ Temperature: ${temp}°C`);
+        broadcastToClients(msgStr, ws);
+        return;
+      }
+      if (msgStr.startsWith('HUM:')) {
+        const hum = parseFloat(msgStr.split(':')[1]);
+        log(`💧 Humidity: ${hum}%`);
+        broadcastToClients(msgStr, ws);
         return;
       }
 
-      const pwCheck2 = msgStr.match(/^CONFIRM_ADD_RFID_(.+)$/);
-      if (pwCheck2) {
-        const pw = pwCheck2[1];
-        log(`🔑 Nhận yêu cầu kiểm tra mật khẩu từ ${source}: ${pw.slice(0, 2)}****`);
-        const response = pw === accessData.password ? "CONFIRM_ADD_RFID_OK" : "CONFIRM_ADD_RFID_FAIL";
-        ws.send(response);
-        log(`🔑 Kiểm tra mật khẩu để thêm RFID: ${response === "CONFIRM_ADD_RFID_OK" ? "Thành công" : "Thất bại"}`);
-        return;
-      }
-
-        // === Phân tích lệnh LED ===
-  const ledMatch = msgStr.match(/^LED_([1-7])_(ON|OFF)$/);
-  if (ledMatch) {
-    const ledId = parseInt(ledMatch[1]);
-    const action = ledMatch[2];
-    const newState = action === "ON";
-    const currentState = ledStates[`led${ledId}`];
-
-    if (currentState !== newState) {
-      ledStates[`led${ledId}`] = newState;
-      log(`💡 Đã thay đổi: LED_${ledId} -> ${action === "ON" ? "Bật" : "Tắt"}`);
-
-      if (esp32Socket?.readyState === WebSocket.OPEN) {
-        esp32Socket.send(msgStr);
-      }
-
-      wss.clients.forEach(client => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(msgStr);
-        }
-      });
-    }
-    return;
-  }
-
-  // === Phân tích lệnh FAN ===
-  const fanMatch = msgStr.match(/^FAN_([1-2])_(ON|OFF)$/);
-  if (fanMatch) {
-    const fanId = parseInt(fanMatch[1]);
-    const action = fanMatch[2];
-    const newState = action === "ON";
-    const currentState = fanStates[`fan${fanId}`];
-
-    if (currentState !== newState) {
-      fanStates[`fan${fanId}`] = newState;
-      log(`🌬️ Đã thay đổi: FAN_${fanId} -> ${action === "ON" ? "Bật" : "Tắt"}`);
-
-      if (esp32Socket?.readyState === WebSocket.OPEN) {
-        esp32Socket.send(msgStr);
-      }
-
-      wss.clients.forEach(client => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(msgStr);
-        }
-      });
-    }
-    return;
-  }
-
-    // === Phân tích lệnh cửa ===
-    if (msgStr === "DOOR_OPEN") {
-      doorState = true;
-      ledStates.led5 = true; // Mở cửa thì bật đèn 5 theo
-
-      if (esp32Socket?.readyState === WebSocket.OPEN) {
-        esp32Socket.send("DOOR_OPEN");
-        esp32Socket.send("LED_5_ON");
-      }
-
-      wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send("DOOR_OPEN");
-          client.send("LED_5_ON");
-        }
-      });
-
-      log("🚪 Cửa đã mở");
-      return;
-    }
-
-    if (msgStr === "DOOR_CLOSE") {
-      doorState = false;
-
-      if (esp32Socket?.readyState === WebSocket.OPEN) {
-        esp32Socket.send("DOOR_CLOSE");
-      }
-
-      wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send("DOOR_CLOSE");
-        }
-      });
-
-      log("🚪 Cửa đã đóng");
-      return;
-  }
-
-      const pwCheck1 = msgStr.match(/^CONFIRM_DELETE_RFID_(.+)$/);
-      if (pwCheck1) {
-        const pw = pwCheck1[1];
-        log(`🔑 Nhận yêu cầu kiểm tra mật khẩu từ ${source}: ${pw.slice(0, 2)}****`);
-        const response = pw === accessData.password ? "CONFIRM_DELETE_RFID_OK" : "CONFIRM_DELETE_RFID_FAIL";
-        ws.send(response);
-        log(`🔑 Kiểm tra mật khẩu để xóa RFID: ${response === "CONFIRM_DELETE_RFID_OK" ? "Thành công" : "Thất bại"}`);
-        return;
-      }
-
-      const addMatch = msgStr.match(/^ADD_RFID_(.+)$/);
-      if (addMatch) {
-        const uid = addMatch[1];
-        const exists = accessData.rfidList.some(entry => entry.id === uid);
-
-        if (!exists) {
-          accessData.rfidList.push({ id: uid, name: "UNKNOWN" });
-          saveAccessData();
-          ws.send("ADD_RFID_OK");
-          log(`✅ Đã thêm RFID mới: ${uid}`);
-        } else {
-          ws.send("ADD_RFID_EXISTS");
-          log(`ℹ️ RFID đã tồn tại: ${uid}`);
+      // Handle LED Commands
+      const ledMatch = msgStr.match(/^LED_([1-7])_(ON|OFF)$/);
+      if (ledMatch) {
+        const ledId = parseInt(ledMatch[1]);
+        const action = ledMatch[2];
+        const newState = action === 'ON';
+        if (ledStates[`led${ledId}`] !== newState) {
+          ledStates[`led${ledId}`] = newState;
+          log(`💡 LED_${ledId} -> ${action}`);
+          if (esp32Socket?.readyState === WebSocket.OPEN) esp32Socket.send(msgStr);
+          broadcastToClients(msgStr, ws);
         }
         return;
       }
 
-      const deleteMatch = msgStr.match(/^DELETE_RFID_(.+)$/);
-      if (deleteMatch) {
-        const uid = deleteMatch[1];
-        const index = accessData.rfidList.findIndex(entry => entry.id === uid);
-
-        if (index !== -1) {
-          accessData.rfidList.splice(index, 1);
-          saveAccessData();
-          ws.send("DELETE_RFID_OK");
-          log(`🗑️ Đã xóa RFID: ${uid}`);
-        } else {
-          ws.send("DELETE_RFID_NOT_FOUND");
-          log(`❌ Không tìm thấy RFID để xóa: ${uid}`);
+      // Handle Fan Commands
+      const fanMatch = msgStr.match(/^FAN_([1-2])_(ON|OFF)$/);
+      if (fanMatch) {
+        const fanId = parseInt(fanMatch[1]);
+        const action = fanMatch[2];
+        const newState = action === 'ON';
+        if (fanStates[`fan${fanId}`] !== newState) {
+          fanStates[`fan${fanId}`] = newState;
+          log(`🌬️ FAN_${fanId} -> ${action}`);
+          if (esp32Socket?.readyState === WebSocket.OPEN) esp32Socket.send(msgStr);
+          broadcastToClients(msgStr, ws);
         }
         return;
       }
 
+      // Handle Door Commands
+      if (msgStr === 'DOOR_OPEN') {
+        doorState = true;
+        ledStates.led5 = true;
+        log('🚪 Door opened');
+        if (esp32Socket?.readyState === WebSocket.OPEN) {
+          esp32Socket.send('DOOR_OPEN');
+          esp32Socket.send('LED_5_ON');
+        }
+        broadcastToClients('DOOR_OPEN', null);
+        broadcastToClients('LED_5_ON', null);
+        return;
+      }
+      if (msgStr === 'DOOR_CLOSE') {
+        doorState = false;
+        log('🚪 Door closed');
+        if (esp32Socket?.readyState === WebSocket.OPEN) esp32Socket.send('DOOR_CLOSE');
+        broadcastToClients('DOOR_CLOSE', null);
+        return;
+      }
+
+      // Handle Password Verification
       const pwCheck = msgStr.match(/^VERIFY_PASSWORD_(.+)$/);
       if (pwCheck) {
         const pw = pwCheck[1];
@@ -337,137 +238,75 @@ module.exports = function setupWebSocket(server) {
         return;
       }
 
+      // Handle Add RFID
+      const addMatch = msgStr.match(/^ADD_RFID_(.+)$/);
+      if (addMatch) {
+        const uid = addMatch[1];
+        if (!accessData.rfidList.some(entry => entry.id === uid)) {
+          accessData.rfidList.push({ id: uid, name: 'UNKNOWN' });
+          await saveAccessData();
+          ws.send('ADD_RFID_OK');
+          log(`✅ Added RFID: ${uid}`);
+        } else {
+          ws.send('ADD_RFID_EXISTS');
+          log(`ℹ️ RFID already exists: ${uid}`);
+        }
+        return;
+      }
+
+      // Handle Delete RFID
+      const deleteMatch = msgStr.match(/^DELETE_RFID_(.+)$/);
+      if (deleteMatch) {
+        const uid = deleteMatch[1];
+        const index = accessData.rfidList.findIndex(entry => entry.id === uid);
+        if (index !== -1) {
+          accessData.rfidList.splice(index, 1);
+          await saveAccessData();
+          ws.send('DELETE_RFID_OK');
+          log(`🗑️ Deleted RFID: ${uid}`);
+        } else {
+          ws.send('DELETE_RFID_NOT_FOUND');
+          log(`❌ RFID not found: ${uid}`);
+        }
+        return;
+      }
+
+      // Handle Password Confirmation for RFID Operations
+      const pwCheckRfid = msgStr.match(/^(CONFIRM_ADD_RFID|CONFIRM_DELETE_RFID)_(.+)$/);
+      if (pwCheckRfid) {
+        const [, type, pw] = pwCheckRfid;
+        log(`🔑 ${type} password check from ${source}`);
+        const isMatch = pw === accessData.password;
+        const response = isMatch ? `${type}_OK` : `${type}_FAIL`;
+        ws.send(response);
+        log(`🔑 ${type}: ${isMatch ? 'Success' : 'Failed'}`);
+        return;
+      }
+
+      // Handle Password Update
       const updatePwCmd = msgStr.match(/^UPDATE_PASSWORD_(.+?)_(.+)$/);
       if (updatePwCmd) {
-        const oldPassword = updatePwCmd[1];
-        const newPassword = updatePwCmd[2];
-
-        log(`🔐 [Đổi mật khẩu] Yêu cầu nhận được: Cũ = "${oldPassword}", Mới = "${newPassword}"`);
-
+        const [, oldPassword, newPassword] = updatePwCmd;
+        log(`🔐 Password update request`);
         if (oldPassword !== accessData.password) {
-          ws.send("UPDATE_PASSWORD_FAIL_OLD_WRONG");
-          log("🔐 Cập nhật mật khẩu thất bại: Mật khẩu cũ không đúng");
+          ws.send('UPDATE_PASSWORD_FAIL_OLD_WRONG');
+          log('🔐 Password update failed: Old password incorrect');
         } else if (!newPassword) {
-          ws.send("UPDATE_PASSWORD_FAIL_EMPTY");
-          log("🔐 Cập nhật mật khẩu thất bại: Mật khẩu mới rỗng");
+          ws.send('UPDATE_PASSWORD_FAIL_EMPTY');
+          log('🔐 Password update failed: New password empty');
         } else {
           accessData.password = newPassword;
-          saveAccessData();
-          ws.send("UPDATE_PASSWORD_OK");
-          log("🔐 Đã cập nhật mật khẩu thành công.");
-        }
-
-        return;
-      }
-
-      try {
-        const data = JSON.parse(msgStr);
-        if (data.action === "updatePassword") {
-          log(`🔐 Nhận yêu cầu cập nhật mật khẩu từ ${source}`);
-          if (data.oldPassword !== accessData.password) {
-            ws.send("UPDATE_PASSWORD_FAIL_OLD_WRONG");
-            log(`🔐 Cập nhật mật khẩu thất bại: Mật khẩu cũ không đúng`);
-          } else if (!data.newPassword) {
-            ws.send("UPDATE_PASSWORD_FAIL_EMPTY");
-            log(`🔐 Cập nhật mật khẩu thất bại: Mật khẩu mới rỗng`);
-          } else {
-            accessData.password = data.newPassword;
-            saveAccessData();
-            ws.send("UPDATE_PASSWORD_OK");
-            log("🔐 Đã cập nhật mật khẩu thành công.");
-          }
-          return;
-        }
-      } catch {}
-
-      const ledCommand = msgStr.match(/^LED_([1-7])_(ON|OFF)$/);
-      if (ledCommand) {
-        const ledId = parseInt(ledCommand[1]);
-        const action = ledCommand[2];
-        const newState = action === "ON";
-        const currentState = ledStates[`led${ledId}`];
-
-        if (currentState !== newState) {
-          ledStates[`led${ledId}`] = newState;
-          log(`💡 Đã thay đổi: LED_${ledId} -> ${action === "ON" ? "Bật" : "Tắt"}`);
-
-          if (esp32Socket?.readyState === WebSocket.OPEN) {
-            esp32Socket.send(msgStr);
-          }
-
-          wss.clients.forEach(client => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-              client.send(msgStr);
-            }
-          });
+          await saveAccessData();
+          ws.send('UPDATE_PASSWORD_OK');
+          log('🔐 Password updated successfully');
         }
         return;
       }
 
-      const fanCommand = msgStr.match(/^FAN_([1-2])_(ON|OFF)$/);
-      if (fanCommand) {
-        const fanId = parseInt(fanCommand[1]);
-        const action = fanCommand[2];
-        const newState = action === "ON";
-        const currentState = fanStates[`fan${fanId}`];
-
-        if (currentState !== newState) {
-          fanStates[`fan${fanId}`] = newState;
-          log(`🌬️ Đã thay đổi: FAN_${fanId} -> ${action === "ON" ? "Bật" : "Tắt"}`);
-
-          if (esp32Socket?.readyState === WebSocket.OPEN) {
-            esp32Socket.send(msgStr);
-          }
-
-          wss.clients.forEach(client => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-              client.send(msgStr);
-            }
-          });
-        }
-        return;
-      }
-
-      if (msgStr === "DOOR_OPEN") {
-        doorState = true;
-        ledStates.led5 = true;
-
-        if (esp32Socket?.readyState === WebSocket.OPEN) {
-          esp32Socket.send("DOOR_OPEN");
-          esp32Socket.send("LED_5_ON");
-        }
-
-        wss.clients.forEach(client => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send("DOOR_OPEN");
-            client.send("LED_5_ON");
-          }
-        });
-
-        log("🚪 Cửa đã mở");
-        return;
-      }
-
-      if (msgStr === "DOOR_CLOSE") {
-        doorState = false;
-
-        if (esp32Socket?.readyState === WebSocket.OPEN) {
-          esp32Socket.send("DOOR_CLOSE");
-        }
-
-        wss.clients.forEach(client => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send("DOOR_CLOSE");
-          }
-        });
-
-        log("🚪 Cửa đã đóng");
-        return;
-      }
-
+      // Handle LED Timer
       const ledTimerCmd = msgStr.match(/^LED_([1-7])_(ON|OFF)_(\d{2}):(\d{2})$/);
       if (ledTimerCmd) {
-        const [_, ledId, action, hour, minute] = ledTimerCmd;
+        const [, ledId, action, hour, minute] = ledTimerCmd;
         const key = `led${ledId}_${action}`;
         const target = new Date();
         target.setHours(hour, minute, 0, 0);
@@ -477,43 +316,45 @@ module.exports = function setupWebSocket(server) {
 
         if (timers[key]) {
           clearTimeout(timers[key]);
-          log(`⏰ Đã hủy timer cũ cho ${key}`);
+          log(`⏰ Cancelled previous timer for ${key}`);
         }
 
         timers[key] = setTimeout(() => {
           const command = `LED_${ledId}_${action}`;
-          const newState = action === "ON";
+          const newState = action === 'ON';
           if (ledStates[`led${ledId}`] !== newState) {
             ledStates[`led${ledId}`] = newState;
-            log(`⏰ [Timer] Thực thi: ${command}`);
-            wss.clients.forEach(c => c.readyState === WebSocket.OPEN && c.send(command));
-            esp32Socket?.readyState === WebSocket.OPEN && esp32Socket.send(command);
+            log(`⏰ [Timer] Executed: ${command}`);
+            broadcastToClients(command, null);
+            if (esp32Socket?.readyState === WebSocket.OPEN) esp32Socket.send(command);
           }
+          delete timers[key];
         }, delay);
-        const hours12 = target.getHours() % 12 || 12;
-        const minutes = target.getMinutes().toString().padStart(2, '0');
-        const ampm = target.getHours() >= 12 ? 'PM' : 'AM';
-        log(`⏰ Đã đặt timer cho LED_${ledId}_${action} lúc ${hours12}:${minutes} ${ampm}`);
+
+        const timeStr = target.toLocaleTimeString('en-US', { hour12: true });
+        log(`⏰ Set timer for LED_${ledId}_${action} at ${timeStr}`);
         return;
       }
 
+      // Handle Cancel LED Timer
       const cancelLedCmd = msgStr.match(/^CANCEL_LED_([1-7])_(ON|OFF)$/);
       if (cancelLedCmd) {
-        const [_, ledId, mode] = cancelLedCmd;
+        const [, ledId, mode] = cancelLedCmd;
         const key = `led${ledId}_${mode}`;
         if (timers[key]) {
           clearTimeout(timers[key]);
           delete timers[key];
-          log(`❌ Đã hủy timer cho LED_${ledId}_${mode === "ON" ? "Bật" : "Tắt"}`);
+          log(`❌ Cancelled timer for LED_${ledId}_${mode}`);
         } else {
-          log(`⚠️ Không tìm thấy timer để hủy cho LED_${ledId}_${mode === "ON" ? "Bật" : "Tắt"}`);
+          log(`⚠️ No timer found for LED_${ledId}_${mode}`);
         }
         return;
       }
 
+      // Handle Fan Timer
       const fanTimerCmd = msgStr.match(/^FAN_([1-2])_(ON|OFF)_(\d{2}):(\d{2})$/);
       if (fanTimerCmd) {
-        const [_, fanId, action, hour, minute] = fanTimerCmd;
+        const [, fanId, action, hour, minute] = fanTimerCmd;
         const key = `fan${fanId}_${action}`;
         const target = new Date();
         target.setHours(hour, minute, 0, 0);
@@ -523,50 +364,51 @@ module.exports = function setupWebSocket(server) {
 
         if (timers[key]) {
           clearTimeout(timers[key]);
-          log(`⏰ Đã hủy timer cũ cho ${key}`);
+          log(`⏰ Cancelled previous timer for ${key}`);
         }
 
         timers[key] = setTimeout(() => {
           const command = `FAN_${fanId}_${action}`;
-          const newState = action === "ON";
+          const newState = action === 'ON';
           if (fanStates[`fan${fanId}`] !== newState) {
             fanStates[`fan${fanId}`] = newState;
-            log(`⏰ [Timer] Thực thi: ${command}`);
-            wss.clients.forEach(c => c.readyState === WebSocket.OPEN && c.send(command));
-            esp32Socket?.readyState === WebSocket.OPEN && esp32Socket.send(command);
+            log(`⏰ [Timer] Executed: ${command}`);
+            broadcastToClients(command, null);
+            if (esp32Socket?.readyState === WebSocket.OPEN) esp32Socket.send(command);
           }
+          delete timers[key];
         }, delay);
-        const hours12 = target.getHours() % 12 || 12;
-        const minutes = target.getMinutes().toString().padStart(2, '0');
-        const ampm = target.getHours() >= 12 ? 'PM' : 'AM';
-        log(`⏰ Đã đặt timer cho LED_${ledId}_${action} lúc ${hours12}:${minutes} ${ampm}`);
+
+        const timeStr = target.toLocaleTimeString('en-US', { hour12: true });
+        log(`⏰ Set timer for FAN_${fanId}_${action} at ${timeStr}`);
         return;
       }
 
+      // Handle Cancel Fan Timer
       const cancelFanCmd = msgStr.match(/^CANCEL_FAN_([1-2])_(ON|OFF)$/);
       if (cancelFanCmd) {
-        const [_, fanId, mode] = cancelFanCmd;
+        const [, fanId, mode] = cancelFanCmd;
         const key = `fan${fanId}_${mode}`;
         if (timers[key]) {
           clearTimeout(timers[key]);
           delete timers[key];
-          log(`❌ Đã hủy timer cho FAN_${fanId}_${mode === "ON" ? "Bật" : "Tắt"}`);
+          log(`❌ Cancelled timer for FAN_${fanId}_${mode}`);
         } else {
-          log(`⚠️ Không tìm thấy timer để hủy cho FAN_${fanId}_${mode === "ON" ? "Bật" : "Tắt"}`);
+          log(`⚠️ No timer found for FAN_${fanId}_${mode}`);
         }
         return;
       }
 
-      log(`❌ ${source} gửi lệnh không hợp lệ: ${msgStr}`);
+      log(`❌ Invalid command from ${source}: ${msgStr}`);
     });
 
-    ws.on("close", () => {
+    ws.on('close', () => {
       if (ws === esp32Socket) {
         esp32Socket = null;
-        log("❌ ESP32-S3 đã ngắt kết nối");
+        log('❌ ESP32-S3 disconnected');
       } else {
-        log("🛑 Web Client đã ngắt kết nối");
+        log('🛑 Web Client disconnected');
       }
     });
   });
-};
+}
