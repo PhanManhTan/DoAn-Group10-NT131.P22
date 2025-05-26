@@ -18,7 +18,7 @@ app.use(session({
 const routes = require('./routes');
 app.use('/', routes);
 
-const CLIENTS_DIR = path.join(__dirname, '..', 'clients');
+const CLIENTS_DIR = path.join(__dirname, '..', 'public');
 app.use(express.static(CLIENTS_DIR));
 app.use((req, res) => res.status(404).sendFile(path.join(CLIENTS_DIR, '404.html')));
 
