@@ -5,7 +5,7 @@ const router = express.Router();
 // Lay log tu AccessLog model
 const AccessLog = require('../src/models/AccessLog');
 
-const CLIENTS_DIR = path.join(__dirname, '..', '..', 'clients');
+const CLIENTS_DIR = path.join(__dirname, '..', '..', 'public');
 const PUBLIC_PATHS = [
   '/login', '/login.html',
   '/register', '/register.html',
