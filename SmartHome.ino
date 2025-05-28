@@ -1,11 +1,22 @@
-#include <WiFi.h>
+#include <WiFi.h> 
 #include <WebSocketsClient.h>
 #include <SPI.h>
 #include <MFRC522.h>
 #include <Keypad.h>
 #include <ESP32Servo.h>
 #include <LiquidCrystal_I2C.h>  
-#include "DHT.h"
+#include <DHT.h>
+
+// ---------- WiFi ----------
+const char *ssid = "FPT Telecom-0F80";
+const char *password = "Thienkim38783979";
+
+//---------- WebSocket ----------
+const char* websocket_host = "192.168.1.11";
+const uint16_t websocket_port = 3000;
+const char* websocket_path = "/";
+WebSocketsClient webSocket;
+bool isWebSocketConnected = false;  // Biến theo dõi trạng thái kết nối WebSocket
 
 // ---------- DHT11 ----------
 #define DHTPIN 46         // GPIO46 của ESP32-S3
@@ -14,19 +25,6 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // ---------- LCD ----------
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // Địa chỉ I2C: 0x27
-
-// ---------- WiFi ----------
-
-const char *ssid = "FPT Telecom-0F80";
-const char *password = "Thienkim38783979";
-
-//---------- WebSocket ----------
-const char* websocket_host = "192.168.1.11";
-
-const uint16_t websocket_port = 3000;
-const char* websocket_path = "/";
-WebSocketsClient webSocket;
-bool isWebSocketConnected = false;  // Biến theo dõi trạng thái kết nối WebSocket
 
 // ---------- RFID ----------
 #define SS_PIN    15
@@ -48,7 +46,7 @@ char keys[ROW_NUM][COL_NUM] = {
   {'*', '0', '#', 'D'}
 }; 
 byte pin_rows[ROW_NUM] = {35, 36, 37, 38}; 
-byte pin_column[COL_NUM] = {39, 40,41,42}; 
+byte pin_column[COL_NUM] = {39, 40 ,41 , 42}; 
 Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COL_NUM);
 
 // ---------- Servo ----------
@@ -59,7 +57,6 @@ bool doorOpen = false;
 #define FAN_1_PIN 48
 #define FAN_2_PIN 47
 bool fanStates[2] = {false, false};
-bool onFromServer = false;
 // ---------- LED ----------
 #define LED_1_PIN 12 
 #define LED_2_PIN 11 
@@ -84,8 +81,6 @@ bool lastGasState = false;
 // ---------- Timer ----------
 unsigned long doorOpenTime = 0;
 bool doorTimerActive = false;
-unsigned long lastStateUpdate = 0;
-const unsigned long stateUpdateInterval = 10000;
 
 unsigned long lastReadTime = 0;          // Thời điểm lần đọc trước
 const unsigned long readInterval = 5000; // Thời gian giữa 2 lần đọc (ms)
@@ -93,20 +88,19 @@ const unsigned long readInterval = 5000; // Thời gian giữa 2 lần đọc (m
 // ---------- Gửi trạng thái tất cả thiết bị ----------
 void sendAllStates() {
   if (webSocket.isConnected()) {
-    for (int i = 0; i < 7; i++) {
-      String message = ledStates[i] ? ("LED_" + String(i + 1) + "_ON") : ("LED_" + String(i + 1) + "_OFF"); //Duyệt trạng thái của từng đèn LED
-      webSocket.sendTXT(message);                                //Gửi đến WebSocket
-      Serial.printf("Gửi đến WebSocket: %s\n", message.c_str()); //In ra màn hình monitor
+    for (int i = 0; i < 7; i++) { 
+      String message = ledStates[i] ? ("LED_" + String(i + 1) + "_ON") : ("LED_" + String(i + 1) + "_OFF"); 
+      webSocket.sendTXT(message);                                
+      Serial.printf("Gửi đến WebSocket: %s\n", message.c_str()); 
     }
-    // Gửi trạng thái quạt
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) { 
      String fanMessage = fanStates[i] ? ("FAN_" + String(i + 1) + "_ON") : ("FAN_" + String(i + 1) + "_OFF");
      webSocket.sendTXT(fanMessage);
-    Serial.printf("Gửi đến WebSocket: %s\n", fanMessage.c_str());
+     Serial.printf("Gửi đến WebSocket: %s\n", fanMessage.c_str());
     }
-    String doorMessage = doorOpen ? "DOOR_OPEN" : "DOOR_CLOSE"; //Kiểm tra trạng thái của cửa
-    webSocket.sendTXT(doorMessage);                             //Gửi đến WebSocket
-    Serial.printf("Gửi đến WebSocket: %s\n", doorMessage.c_str());  //In ra màn hình monitor
+    String doorMessage = doorOpen ? "DOOR_OPEN" : "DOOR_CLOSE"; 
+    webSocket.sendTXT(doorMessage);                             
+    Serial.printf("Gửi đến WebSocket: %s\n", doorMessage.c_str()); 
   }
 }
 
@@ -121,9 +115,8 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
       Serial.println("WebSocket đã kết nối");
       isWebSocketConnected = true;
       webSocket.sendTXT("ESP32-S3"); // Gửi xác nhận danh tính ESP32-S3
-      sendAllStates(); // Gửi toàn bộ trạng thái
+      sendAllStates(); // Gửi trạng thái của các thiết bị
       break;
-
     case WStype_TEXT: {
       String message = String((char*)payload);
       Serial.printf("Nhận từ WebSocket: %s\n", message.c_str());
@@ -152,9 +145,11 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
           }
         }
       }
+
+      // Xử lý bật/tắt quạt
       for (int i = 0; i < 2; i++) {
-  String fanOnCmd = "FAN_" + String(i + 1) + "_ON";
-  String fanOffCmd = "FAN_" + String(i + 1) + "_OFF";
+        String fanOnCmd = "FAN_" + String(i + 1) + "_ON";
+        String fanOffCmd = "FAN_" + String(i + 1) + "_OFF";
         // Xử lý lệnh mở/đóng quạt
           if (message == fanOnCmd) {
         if (!fanStates[i]) {
@@ -170,8 +165,8 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
           }
          }
       }
-      if(message == "FAN_1_ON") onFromServer = true;
-      // Xử lý lệnh mở/đóng cửa
+
+      // Xử lý đóng/mở cửa
       if (message == "DOOR_OPEN") {
         if (!doorOpen) {
           updateDoorState(true);
@@ -186,30 +181,36 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
           Serial.println("✅ Cửa được đóng từ server");
         }
       }
-      else if (message.startsWith("RFID_OK")) {
-  updateDoorState(true);
-  doorOpenTime = millis();
-  doorTimerActive = true;
 
-  String name = message.substring(8);  // Bỏ "RFID_OK_" để lấy tên
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Access Granted");
-  lcd.setCursor(0, 1);
-  lcd.print("Welcome! " + name);
-  Serial.printf("✅ Mở cửa - RFID xác minh thành công, tên: %s\n", name.c_str());
+      //Trường hợp RFID đúng => Cửa mở
+      else if (message.startsWith("RFID_OK")) { // Nếu RFID được gán tên, Server sẽ gửi RFID_OK_X với X là tên
+        updateDoorState(true);                  // Nếu RFID không được gán tên, Server sẽ gửi RFID_OK        
+        doorOpenTime = millis();
+        doorTimerActive = true;
 
-} else if ( message == "PASSWORD_OK") {//message == "RFID_OK" ||
-  updateDoorState(true);
-  doorOpenTime = millis();
-  doorTimerActive = true;
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Access Granted");
-  lcd.setCursor(0, 1);
-  lcd.print("Welcome!");
-  Serial.println("✅ Mở cửa - Xác minh thành công");
-      } else if (message == "RFID_FAIL" || message == "PASSWORD_FAIL") {
+        String name = message.substring(8);  
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Access Granted");
+        lcd.setCursor(0, 1);
+        lcd.print("Welcome! " + name);
+        Serial.printf("✅ Mở cửa - RFID xác minh thành công, tên: %s\n", name.c_str());
+      } 
+      //Trường hợp mật khẩu đúng => Cửa mở
+      else if ( message == "PASSWORD_OK") {
+        updateDoorState(true);
+        doorOpenTime = millis();
+        doorTimerActive = true;
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Access Granted");
+        lcd.setCursor(0, 1);
+        lcd.print("Welcome!");
+        Serial.println("✅ Mở cửa - Xác minh thành công");
+      }
+
+      //Trường hợp RFID và mật khẩu không đúng => Cửa không mở
+      else if (message == "RFID_FAIL" || message == "PASSWORD_FAIL") {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Access Denied");
@@ -217,6 +218,8 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
         lcd.print("Try Again");
         Serial.println("❌ Từ chối mở cửa - Xác minh thất bại");
       }
+
+      //Trường hợp mật khẩu đúng => Quét RFID để thêm/xóa
       else if(message == "CONFIRM_ADD_RFID_OK"){
         lcd.clear();
         lcd.setCursor(0, 0);
@@ -235,6 +238,8 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
         Serial.println("Xác minh mật khẩu thành công - Quét RFID để xóa");
         deleteRFID = true;
       }
+
+      //Trường hợp mật khẩu không đúng => Không thể quét RFID để thêm/xóa
       else if(message == "CONFIRM_ADD_RFID_FAIL" || message == "CONFIRM_DELETE_RFID_FAIL"){
          lcd.clear();
         lcd.setCursor(0, 0);
@@ -243,29 +248,37 @@ void webSocketEvent(WStype_t type, uint8_t *payload, size_t length) {
         lcd.print("Try Again");
         Serial.println("Xác minh mật khẩu thất bại - Thử lại");
       }
+
+      //Trường hợp thêm RFID thành công
       else if (message == "ADD_RFID_OK") {
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("RFID Added");
       }
+
+      //Trường hợp RFID muốn thêm đã tồn tại trong Database
       else if (message == "ADD_RFID_EXISTS") {
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("RFID Exists");
       }
+
+      //Trường hợp xóa RFID thành công
       else if (message == "DELETE_RFID_OK") {
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("RFID Deleted");
       }
+
+      //Trường hợp RFID muốn xóa không tìm thấy trong Database
       else if (message == "DELETE_RFID_NOT_FOUND") {
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("RFID");
       lcd.setCursor(0, 1);
       lcd.print("Not Found");
-}
-      break; // QUAN TRỌNG: thêm break ở đây!
+      }
+      break; 
     }
     default:
       break;
@@ -293,7 +306,6 @@ void updateDoorState(bool newState) {
     }
   }
 }
-
 void setup() {
   Serial.begin(115200);
   
@@ -314,7 +326,7 @@ void setup() {
     pinMode(ledPins[i], OUTPUT);
     digitalWrite(ledPins[i], HIGH);  // Tắt LED (HIGH vì logic ngược)
   }
-   // Khởi tạo quạt (FAN_1_PIN và FAN_2_PIN)
+   // Khởi tạo quạt 
   pinMode(FAN_1_PIN, OUTPUT);
   pinMode(FAN_2_PIN, OUTPUT);
   digitalWrite(FAN_1_PIN, HIGH);  // Tắt quạt ngay từ đầu (logic ngược)
@@ -334,14 +346,21 @@ void setup() {
   Serial.println("📏 Đang đo ngưỡng MQ-5...");
   delay(5000);  // Chờ 5 giây để MQ-5 ổn định
   GAS_THRESHOLD = analogRead(MQ5_PIN);
-  GAS_THRESHOLD = GAS_THRESHOLD * 1.5;
+  GAS_THRESHOLD = GAS_THRESHOLD * 2;
   Serial.printf("✅ GAS_THRESHOLD: %d\n", GAS_THRESHOLD);
-  delay(2000);
 
   // Khởi tạo servo
   doorServo.setPeriodHertz(50);
   doorServo.attach(SERVO_PIN, 500, 2400);
   doorServo.write(0);
+
+  // Khởi tạo RFID
+  SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
+  rfid.PCD_Init();
+  Serial.println("✅ RFID sẵn sàng");
+
+  // Khởi tạo Keypad
+  Serial.println("✅ Keypad sẵn sàng");
 
   //Kết nối WiFi
   WiFi.begin(ssid, password);
@@ -353,26 +372,17 @@ void setup() {
   Serial.println("\n✅ WiFi đã kết nối");
   while (WiFi.localIP().toString() == "0.0.0.0") {
   delay(100);
-}
+  }
   Serial.println(WiFi.localIP());
   delay(1000);
   //Khởi tạo WebSocket
   webSocket.begin(websocket_host, websocket_port, websocket_path);
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
-
-  //Khởi tạo RFID
-  SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN);
-  rfid.PCD_Init();
-  Serial.println("✅ RFID sẵn sàng");
-
- //// Khởi tạo Keypad
-  Serial.println("✅ Keypad sẵn sàng");
 }
 
 void loop() {
   webSocket.loop();
-
   unsigned long currentMillis = millis();
 
   // 🔁 Đo nhiệt độ/độ ẩm mỗi 5 giây
@@ -387,20 +397,18 @@ void loop() {
       Serial.println("❌ Lỗi đọc cảm biến DHT!");
       return; // Không thực hiện nếu dữ liệu không hợp lệ
     }
-
     if (isWebSocketConnected) {
       // ✅ Tạo chuỗi dữ liệu
       String tempMessage = "TEMP:" + String(temperature, 1);
       String humMessage = "HUM:" + String(humidity, 1);
 
-      //Gửi lên WebSocket nếu muốn
       webSocket.sendTXT(tempMessage);
       webSocket.sendTXT(humMessage);
-      Serial.printf("Gửi đến WebSocket: Nhiệt độ: %s, Độ ẩm: %s\n", tempMessage.c_str(), humMessage.c_str());
+      Serial.printf("Gửi đến WebSocket: Nhiệt độ: %s, Độ ẩm: %s\n",
+       tempMessage.c_str(), humMessage.c_str());
 
-      if(onFromServer == false){
       // 🔁 Kiểm tra điều kiện bật/tắt quạt 1 (ví dụ < 30°C thì bật)
-      bool fan1ShouldBeOn = temperature > 34.0;
+      bool fan1ShouldBeOn = temperature < 30.0;
       if (fan1ShouldBeOn != fanStates[0]) {  // Trạng thái thay đổi
         fanStates[0] = fan1ShouldBeOn;
          digitalWrite(FAN_1_PIN, fan1ShouldBeOn ? LOW : HIGH);  // LOW = bật (logic ngược)
@@ -411,27 +419,27 @@ void loop() {
         String fanMessage = fan1ShouldBeOn ? "FAN_1_ON" : "FAN_1_OFF";
         webSocket.sendTXT(fanMessage);
         Serial.printf("Gửi đến WebSocket: %s\n", fanMessage.c_str());
-        }
+
       }
     }
   }
     
-  // Xử lý SR602 Motion Sensor (chỉ khi WebSocket đã kết nối)
-  if (isWebSocketConnected) {
-    bool motionDetected = digitalRead(SR602_PIN) == HIGH;
-    if (motionDetected != lastMotionState) {
-      lastMotionState = motionDetected;
-      ledStates[3] = motionDetected;  // LED 4 liên kết với SR602
-      digitalWrite(LED_4_PIN, motionDetected ? LOW : HIGH);
-      Serial.printf("✅ SR602: %s LED 4\n", motionDetected ? "Bật" : "Tắt");
+// Xử lý SR602 Motion Sensor
+if (isWebSocketConnected) {
+  bool motionDetected = digitalRead(SR602_PIN) == HIGH;
+  if (motionDetected != lastMotionState) {
+    lastMotionState = motionDetected;
+    ledStates[3] = motionDetected;  // LED 4 liên kết với SR602
+    digitalWrite(LED_4_PIN, motionDetected ? LOW : HIGH);
+    Serial.printf("✅ SR602: %s LED 4\n", motionDetected ? "Bật" : "Tắt");
 
-      if (webSocket.isConnected()) {
-        String message = motionDetected ? "LED_4_ON" : "LED_4_OFF";
-        webSocket.sendTXT(message);
-        Serial.printf("Gửi đến WebSocket: %s\n", message.c_str());
-      }
+    if (webSocket.isConnected()) {
+      String message = motionDetected ? "LED_4_ON" : "LED_4_OFF";
+      webSocket.sendTXT(message);
+      Serial.printf("Gửi đến WebSocket: %s\n", message.c_str());
     }
   }
+}
 
 // Xử lý MQ-5 Gas Sensor
 int gasValue = analogRead(MQ5_PIN);
@@ -439,7 +447,7 @@ bool gasDetected = gasValue > GAS_THRESHOLD;
 if (gasDetected != lastGasState) {
   lastGasState = gasDetected;
   // Điều khiển còi
-  digitalWrite(BUZZER_PIN, gasDetected ? LOW : HIGH);  // Logic ngược cho còi
+  digitalWrite(BUZZER_PIN, gasDetected ? LOW : HIGH);  
   // Điều khiển quạt
   Serial.printf("✅ MQ-5: %s Buzzer (Gas Value: %d, Threshold: %d)\n", 
                 gasDetected ? "Bật" : "Tắt", gasValue, GAS_THRESHOLD);
@@ -452,7 +460,7 @@ if (gasDetected != lastGasState) {
 
 // --- Xử lý RFID ---
 if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
-  Serial.print("Đã quét UID: ");
+  // Lấy UID và in ra serial
   String uidStr = "";
   for (byte i = 0; i < rfid.uid.size; i++) {
     if (rfid.uid.uidByte[i] < 0x10) uidStr += "0";
@@ -465,39 +473,37 @@ if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
   Serial.println();
 
   if (webSocket.isConnected()) {
-    if(addRFID == true){
+    if (addRFID) {
       String addCmd = "ADD_RFID_" + uidStr;
-    webSocket.sendTXT(addCmd);
-    Serial.printf("Thêm RFID: %s\n", addCmd.c_str());
-    addRFID = false;
-    }
-    else if (deleteRFID == true)
-    {
+      webSocket.sendTXT(addCmd);
+      Serial.printf("Thêm RFID: %s\n", addCmd.c_str());
+      addRFID = false;
+    } else if (deleteRFID) {
       String deleteCmd = "DELETE_RFID_" + uidStr;
-    webSocket.sendTXT(deleteCmd);
-    Serial.printf("Xóa RFID: %s\n", deleteCmd.c_str());
-    deleteRFID = false;
-    }
-    else
-    {
+      webSocket.sendTXT(deleteCmd);
+      Serial.printf("Xóa RFID: %s\n", deleteCmd.c_str());
+      deleteRFID = false;
+    } else {
       String verifyCmd = "VERIFY_RFID_" + uidStr;
-    webSocket.sendTXT(verifyCmd);
-    Serial.printf("Gửi xác minh RFID: %s\n", verifyCmd.c_str());
+      webSocket.sendTXT(verifyCmd);
+      Serial.printf("Gửi xác minh RFID: %s\n", verifyCmd.c_str());
     }
   } else {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Waiting for WS...");
-      if(webSocket.isConnected()){
-          lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("WS Connected");
-        lcd.setCursor(0, 1);
-        lcd.print("Try Again");
-        }
+
+    if (webSocket.isConnected()) {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("WS Connected");
+      lcd.setCursor(0, 1);
+      lcd.print("Try Again");
+    }
   }
   rfid.PICC_HaltA();
 }
+
 
 // --- Xử lý Keypad ---
 char key = keypad.getKey();
@@ -516,9 +522,6 @@ if (key) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Waiting for WS...");
-        delay(5000);
-        lcd.clear();
-        lcd.setCursor(0, 0);
       }
       inputPIN = "";
     }
@@ -528,8 +531,6 @@ if (key) {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Input Cleared");
-    delay(2000);
-    lcd.clear();
   } else if (key == 'C') {  // ✅ Thêm RFID
     if (inputPIN.length() > 0) {
       if (webSocket.isConnected()) {
@@ -540,8 +541,6 @@ if (key) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Waiting for WS...");
-        delay(2000);
-        lcd.clear();
       }
       inputPIN = "";
     }
@@ -555,15 +554,12 @@ if (key) {
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Waiting for WS...");
-        delay(2000);
-        lcd.clear();
       }
       inputPIN = "";
     }
   } else if (key >= '0' && key <= '9') {  // ✅ Nhập số PIN
-    if (inputPIN.length() < 4) {
+    if (inputPIN.length() < 6) {
       inputPIN += key;
-
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("PIN: ");
